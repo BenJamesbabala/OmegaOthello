@@ -1,4 +1,5 @@
-**OmegaOthello - A Deep Neural Network based Othello/Reversi AI**
+OmegaOthello - A Deep Neural Network based Othello/Reversi AI
+-------------------------------------------------------------
 
 I built this bot to learn deep reinforcement learning.
 Currently the bot is quite weak, however it does seems to be able to learn concepts like board corner, X/Y point, unbalanced edges.
