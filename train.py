@@ -143,3 +143,9 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         with open('model.pkl', 'wb') as f:
             bot.save_params(f)
+
+    try:
+        with open('model.pkl', 'wb') as f:
+            bot.save_params(f)
+    except:
+        print('Failed to save a model')
