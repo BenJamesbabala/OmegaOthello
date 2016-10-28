@@ -14,7 +14,7 @@ def _update_movable(brd_, movable_, plr_):
 
     Returns:
         0: nothing special
-        1: the player no available moves
+        1: the player has no available moves
     '''
     movable_[:,:] = 0
     oppo = plr_^3
@@ -174,7 +174,7 @@ class OthelloBoard(Board):
             self.cur_plr = 1
             self.moves = 0
             hsize = BSIZE//2
-            self.board[hsize-1:hsize+1, hsize-1:hsize+1] = [[2,1],[1,2]]
+            self.board[hsize-1:hsize+1, hsize-1:hsize+1] = [[WHITE,BLACK],[BLACK,WHITE]]
             self._update_movable()
 
     def _update_movable(self):

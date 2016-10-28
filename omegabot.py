@@ -41,7 +41,6 @@ def get_sharedv(name_, shape_, init_range_=None, dtype_=th.config.floatX):
     return v
 
 def lyr_conv(name_, s_x_, idim_, odim_, fsize_=(3,3)):
-    global g_params_di
     name_conv_W = '%s_w'%name_
     name_conv_B = '%s_b'%name_
     init_range = 0.3/sqrt(idim_*fsize_[0]*fsize_[1]+odim_)
@@ -54,8 +53,8 @@ def lyr_conv(name_, s_x_, idim_, odim_, fsize_=(3,3)):
         name_=name_conv_B,
         shape_=(odim_,),
     )
-    g_params_di[name_conv_W] = v_conv_W
-    g_params_di[name_conv_B] = v_conv_B
+    get_sharedv(name_conv_W, (odim_, idim_, *fsize_), (-init_range,init_range))
+    get_sharedv(name_conv_B, (odim_, idim_, *fsize_), (-init_range,init_range))
     return T.nnet.conv2d(
         s_x_, v_conv_W,
         filter_shape=(odim_, idim_, *fsize_),
@@ -63,7 +62,6 @@ def lyr_conv(name_, s_x_, idim_, odim_, fsize_=(3,3)):
     )+v_conv_B.dimshuffle('x',0,'x','x')
 
 def lyr_linear(name_, x_, idim_, odim_):
-    global g_params_di
     name_W = name_+'_w'
     name_B = name_+'_b'
     init_range = 2.23/sqrt(idim_+odim_)
@@ -88,7 +86,7 @@ def lyr_gru_nogate(name_, s_x_, s_state_, idim_, sdim_, lyr_linear_, axis_=-1):
 def lyr_lstm(name_, s_x_, s_state_, idim_, sdim_, odim_, lyr_linear_, axis_=-1):
     raise NotImplementedError()
 
-def _board_to_nnfmt(brd_li_, dtype_='float32'):
+def _board_to_nnfmt(brd_li_):
     '''
     Calculates a numpy array with value 0.0/1.0 for NNs
 
@@ -101,18 +99,16 @@ def _board_to_nnfmt(brd_li_, dtype_='float32'):
     Args:
         brd_li_: List of OthelloBoard instances
 
-        dtype_:
-            numpy dtype of new output array
-
     Returns: dst_ or new array if dst_ is None
     '''
-    dst_ = np.zeros((len(brd_li_), 4,BSIZE,BSIZE), dtype=dtype_)
+    floatx = th.config.floatX
+    dst_ = np.zeros((len(brd_li_), 4,BSIZE,BSIZE), dtype=floatx)
     for i in range(len(brd_li_)):
         brd = brd_li_[i]
         dst_[i,0,:,:] = 1.
-        dst_[i,1] = (brd.board==brd.cur_plr).astype(dtype_)
-        dst_[i,2] = (brd.board==(brd.cur_plr^3)).astype(dtype_)
-        dst_[i,3] = np.clip(brd.movable, 0,1).astype(dtype_)
+        dst_[i,1] = (brd.board==brd.cur_plr).astype(floatx)
+        dst_[i,2] = (brd.board==(brd.cur_plr^3)).astype(floatx)
+        dst_[i,3] = np.clip(brd.movable, 0,1).astype(floatx)
     return dst_
 
 class OmegaBot(object):
@@ -120,7 +116,6 @@ class OmegaBot(object):
         self.optimizer = AdamSGD()
 
     def build_model(self):
-        global g_params_di
         self.params_di = {}
         _using_params(self.params_di)
 
